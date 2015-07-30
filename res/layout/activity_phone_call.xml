@@ -1,0 +1,271 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <EditText
+        android:id="@+id/edPhoneNum"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxEms="17"
+        android:cursorVisible="false"
+        android:hint="Number..."
+        android:inputType="phone"
+        android:textColor="#FFFFFF"
+        android:textSize="30sp" >
+
+        <requestFocus />
+    </EditText>
+    
+    <LinearLayout 
+        android:layout_width="280dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        
+        <Button 
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="1"
+            android:id="@+id/btnOne"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnTwo"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="2"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnThree"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="3"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width="280dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        
+        <Button 
+            android:id="@+id/btnFour"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="4"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnFive"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="5"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnSix"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="6"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width="280dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        
+        <Button 
+            android:id="@+id/btnSeven"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="7"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button
+            android:id="@+id/btnEight" 
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="8"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnNine"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="9"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+    </LinearLayout>
+    
+    <LinearLayout 
+        android:layout_width="280dp"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        
+        <Button 
+            android:id="@+id/btnStar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="*"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnZero"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="0"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+        <Button 
+            android:id="@+id/btnSharp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:text="#"
+            android:textStyle="bold"
+            android:textSize="30sp"
+            android:layout_weight="1"
+            />
+        
+    </LinearLayout>
+
+    <ImageView 
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#FFFFFF"/>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal" >
+        
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical" >
+            
+	        <ImageButton
+	            android:id="@+id/btnAddContact"
+	            android:layout_width="60dp"
+	            android:layout_height="60dp"
+	            android:layout_weight="1"
+	            android:scaleType="fitCenter"
+	            android:src="@drawable/addcontact"
+	            android:textSize="30sp"
+	            android:textStyle="bold" />
+	        
+	        <Button 
+			    android:id="@+id/btnContact"
+			    android:text="Contacts"
+			    android:layout_width="wrap_content"
+			    android:layout_height="match_parent"
+			    android:layout_weight="1"
+			    android:textSize="20dp"
+			    android:textStyle="bold"
+			    />
+        
+        </LinearLayout>
+        
+        <LinearLayout 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical">
+            
+            <TextView 
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="3dp"
+                android:text=""/>
+            
+            <ImageButton
+	            android:id="@+id/btnCall"
+	            android:layout_width="100dp"
+	            android:layout_height="80dp"
+	            android:layout_weight="1"
+	            android:src="@drawable/telep"
+	            android:textSize="30sp"
+	            android:textStyle="bold" />
+            
+        </LinearLayout>
+        
+	    <LinearLayout
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:gravity="center"
+	        android:orientation="vertical" >
+	            
+	        <ImageButton
+	            android:id="@+id/btnBackSpace"
+	            android:layout_width="60dp"
+	            android:layout_height="60dp"
+	            android:layout_weight="1"
+	            android:src="@drawable/bspace"
+	            android:textSize="30sp"
+	            android:textStyle="bold" />
+	        
+	        <Button
+	            android:id="@+id/btnSettings"
+	            android:layout_width="wrap_content"
+	            android:layout_height="match_parent"
+	            android:layout_weight="1"
+	            android:gravity="center_vertical|center_horizontal|center"
+	            android:text="Settings"
+	            android:textSize="20dp"
+	            android:textStyle="bold" />
+
+	        </LinearLayout>
+        
+    </LinearLayout>
+
+</LinearLayout>

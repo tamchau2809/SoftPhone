@@ -1,0 +1,21 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/tvCallingTo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Contact"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+    
+    <Button 
+        android:id="@+id/btnCallOver"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvCallingTo"
+        android:text="Disconnect"/>
+
+</RelativeLayout>

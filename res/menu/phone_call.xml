@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="chau.vpphone.PhoneCallActivity" >
+
+    <item
+        android:id="@+id/action_Login"
+        android:orderInCategory="100"
+        android:title="Login/Edit"
+        app:showAsAction="never"/>
+    
+    <item 
+        android:id="@+id/action_EditAcc"
+        android:orderInCategory="100"
+        android:title="Log Out"
+        />
+
+</menu>

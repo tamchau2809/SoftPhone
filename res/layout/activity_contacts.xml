@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal|center"
+        android:orientation="horizontal" >
+        
+		<EditText
+	        android:id="@+id/edSearch"
+	        android:layout_width="240dp"
+	        android:layout_height="60dp"
+	        android:textSize="30sp"
+	        android:focusable="true"
+	        android:focusableInTouchMode="true"
+	        android:singleLine="true"
+	        android:hint="Search Contact"
+	        android:ems="10" >
+	        <requestFocus />
+	    </EditText>
+    
+        <ImageButton
+            android:id="@+id/btnAddCT"
+            android:layout_width="80dp"
+            android:layout_height="60dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/addcontact" />
+            
+        
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/lvContact"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+            
+    </ListView>
+
+</LinearLayout>
