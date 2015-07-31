@@ -9,6 +9,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
+import android.net.sip.SipException;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -23,7 +24,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-
 import chau.vpphone.PhoneCallActivity;
 
 public class ContactsActivity extends Activity {
@@ -309,6 +309,8 @@ public class ContactsActivity extends Activity {
 	
 	public void doCallSO()
 	{
-		PhoneCallActivity.currentInputNum = contactSelected.getNum(); 
+		PhoneCallActivity.currentInputNum = contactSelected.getNum();
+		AlertDialog.Builder callingDialog = new AlertDialog.Builder(this);
+		callingDialog.show();
 	}
 }
