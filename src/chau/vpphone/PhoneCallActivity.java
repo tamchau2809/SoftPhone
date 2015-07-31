@@ -4,9 +4,8 @@ import java.text.ParseException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
-import android.app.Dialog;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -18,6 +17,8 @@ import android.net.sip.SipProfile;
 import android.net.sip.SipRegistrationListener;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,7 +32,7 @@ import android.widget.TextView;
 
 public class PhoneCallActivity extends Activity implements OnClickListener {
 
-	String currentInputNum;
+	static String currentInputNum;
 	int inputPhoneNum;
 	int endIndex;
 	
@@ -41,7 +42,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	
 	ImageButton btnBackSpace, btnCall, btnAddContact;
 	
-	EditText edPhoneNum;
+	static EditText edPhoneNum;
 	
 	public static final int OPEN_LOGIN = 1;
     public static final int LOGIN_SUCCESS = 2;
@@ -50,34 +51,44 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
     public static final int GET_USER_INFO = 5;
     public static final int USER_CONNECTED = 6;
     
-    public SipManager sipManager = null;
-    public SipProfile profile = null;
-    public SipAudioCall call = null;
-    public IncomingCallReceiver callReceiver;
+    public static SipManager sipManager = null;
+    public static SipProfile profile = null;
+    public static SipAudioCall call = null;
+    public static IncomingCallReceiver callReceiver;
+    Context context;
 	
-	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_phone_call);
 		
-		edPhoneNum = (EditText)findViewById(R.id.edPhoneNum);
+		getFormWiget();
 		
-		btn1 = (Button)findViewById(R.id.btnOne);
-		btn2 = (Button)findViewById(R.id.btnTwo);
-		btn3 = (Button)findViewById(R.id.btnThree);
-		btn4 = (Button)findViewById(R.id.btnFour);
-		btn5 = (Button)findViewById(R.id.btnFive);
-		btn6 = (Button)findViewById(R.id.btnSix);
-		btn7 = (Button)findViewById(R.id.btnSeven);
-		btn8 = (Button)findViewById(R.id.btnEight);
-		btn9 = (Button)findViewById(R.id.btnNine);
-		btn0 = (Button)findViewById(R.id.btnZero);
-		btnStar = (Button)findViewById(R.id.btnStar);
-		btnSharp = (Button)findViewById(R.id.btnSharp);
+		btnCall.setEnabled(false);
 		
-		btnContacts = (Button)findViewById(R.id.btnContact);
-		btnContacts.setOnClickListener(new OnClickListener() {
+		edPhoneNum.addTextChangedListener(new TextWatcher() {
 			
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				// TODO Auto-generated method stub
+				enableCall();
+			}
+			
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void afterTextChanged(Editable s) {
+				// TODO Auto-generated method stub
+				enableCall();
+			}
+		});		
+		
+		btnContacts.setOnClickListener(new OnClickListener() 
+		{			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -86,9 +97,8 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			}
 		});
 		
-		btnAddContact = (ImageButton)findViewById(R.id.btnAddContact);
-		btnAddContact.setOnClickListener(new OnClickListener() {
-			
+		btnAddContact.setOnClickListener(new OnClickListener() 
+		{			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
@@ -102,26 +112,43 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			}
 		});
 		
-		btnCall = (ImageButton)findViewById(R.id.btnCall);
-		btnCall.setOnClickListener(new OnClickListener() {
-			
+		btnCall.setOnClickListener(new OnClickListener() 
+		{			
 			@Override
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				
-				CallToSO();
+				AlertDialog.Builder callingDialog = new AlertDialog.Builder(PhoneCallActivity.this);
+				callingDialog.setTitle("Calling To " + edPhoneNum.getText());
+				currentInputNum = edPhoneNum.getText().toString();				
+				initCall();
+				callingDialog.setNegativeButton("Hang Out", 
+						new DialogInterface.OnClickListener() 
+				{					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						// TODO Auto-generated method stub
+						if(call != null)
+						{
+							try
+							{
+								call.endCall();
+							} catch (SipException e)
+							{}
+							call.close();
+						}
+					}
+				});
+				callingDialog.show();
 			}
 		});
 		
-		currentInputNum = edPhoneNum.getText().toString();
-		inputPhoneNum = currentInputNum.length();
-		btnBackSpace = (ImageButton)findViewById(R.id.btnBackSpace);
 		btnBackSpace.setOnClickListener(new OnClickListener()
 		{
 			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				
+			public void onClick(View v) 
+			{
+				// TODO Auto-generated method stub				
 		        String str=edPhoneNum.getText().toString();
 		        if (str.length() >1 ) { 
 		            str = str.substring(0, str.length() - 1);
@@ -177,14 +204,14 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	}
 	
 	@Override
-	public void onStart()
+	protected void onStart()
 	{
 		super.onStart();
 		initManager();
 	}
 	
 	@Override
-	public void onResume()
+	protected void onResume()
 	{
 		super.onResume();
 		initManager();
@@ -208,8 +235,36 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		Button b1 = (Button)v;
-	    edPhoneNum.setText(edPhoneNum.getText().toString()+b1.getText().toString());
+		
+	}
+	
+	public void getFormWiget()
+	{
+		btn1 = (Button)findViewById(R.id.btnOne);
+		btn2 = (Button)findViewById(R.id.btnTwo);
+		btn3 = (Button)findViewById(R.id.btnThree);
+		btn4 = (Button)findViewById(R.id.btnFour);
+		btn5 = (Button)findViewById(R.id.btnFive);
+		btn6 = (Button)findViewById(R.id.btnSix);
+		btn7 = (Button)findViewById(R.id.btnSeven);
+		btn8 = (Button)findViewById(R.id.btnEight);
+		btn9 = (Button)findViewById(R.id.btnNine);
+		btn0 = (Button)findViewById(R.id.btnZero);
+		btnStar = (Button)findViewById(R.id.btnStar);
+		btnSharp = (Button)findViewById(R.id.btnSharp);
+		
+		btnContacts = (Button)findViewById(R.id.btnContact);
+		btnAddContact = (ImageButton)findViewById(R.id.btnAddContact);
+		btnCall = (ImageButton)findViewById(R.id.btnCall);
+		btnBackSpace = (ImageButton)findViewById(R.id.btnBackSpace);
+
+		edPhoneNum = (EditText)findViewById(R.id.edPhoneNum);
+	}
+	
+	public void enableCall()
+	{
+		boolean isReady = edPhoneNum.getText().toString().length() > 0;
+		btnCall.setEnabled(isReady);
 	}
 	
 	public void initManager()
@@ -236,7 +291,6 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		String username = prefs.getString("namePref", "");
 		String domain = prefs.getString("domainPref", "");
 		String password = prefs.getString("passPref", "");
-		
 		
 		try
 		{
@@ -330,33 +384,33 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
         calledDialog.show();
     }
 	
-	public void CallToSO()
-	{
-		AlertDialog.Builder callingDialog = new AlertDialog.Builder(this);
-		callingDialog.setTitle("Calling To " + edPhoneNum.getText());
-		currentInputNum = edPhoneNum.getText().toString();
-		initCall();
-		callingDialog.setNegativeButton("Hang Out", 
-				new DialogInterface.OnClickListener() {
-			
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// TODO Auto-generated method stub
-				if(call != null)
-				{
-					try
-					{
-						call.endCall();
-					} catch (SipException e)
-					{}
-					call.close();
-				}
-			}
-		});
-		callingDialog.show();
-	}
+//	public static void CallToSO()
+//	{
+//		AlertDialog.Builder callingDialog = new AlertDialog.Builder(this);
+//		callingDialog.setTitle("Calling To " + edPhoneNum.getText());
+//		currentInputNum = edPhoneNum.getText().toString();
+//		initCall();
+//		callingDialog.setNegativeButton("Hang Out", 
+//				new DialogInterface.OnClickListener() {
+//			
+//			@Override
+//			public void onClick(DialogInterface dialog, int which) {
+//				// TODO Auto-generated method stub
+//				if(call != null)
+//				{
+//					try
+//					{
+//						call.endCall();
+//					} catch (SipException e)
+//					{}
+//					call.close();
+//				}
+//			}
+//		});
+//		callingDialog.show();
+//	}
 	
-	public void initCall()
+	public static void initCall()
 	{
 		try
 		{

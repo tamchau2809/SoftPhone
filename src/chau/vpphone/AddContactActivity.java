@@ -29,16 +29,17 @@ public class AddContactActivity extends Activity {
 		
 		edName = (EditText)findViewById(R.id.edPhoneNum);
 		
-		Intent intent = getIntent();
-		Bundle bundle = intent.getBundleExtra("NUM");
-		number = bundle.getString("NUMBER");
+//		Intent intent = getIntent();
+//		Bundle bundle = intent.getBundleExtra("NUM");
+//		number = bundle.getString("NUMBER");
 		
 		edContactName = (EditText)findViewById(R.id.edEditContactName);
 		edPhoneNum = (EditText)findViewById(R.id.edEditSavePhonNum);
-		if(number != null)
-		{
-			edPhoneNum.setText(number);
-		}
+//		if(number != null)
+//		{
+//			edPhoneNum.setText(number);
+//		}
+//		else edPhoneNum.setText(null);
 		edAdd = (EditText)findViewById(R.id.edEditSaveAddress);
 	}
 	

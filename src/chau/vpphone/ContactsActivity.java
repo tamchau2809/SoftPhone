@@ -3,6 +3,7 @@ package chau.vpphone;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -21,6 +22,9 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
+
+import chau.vpphone.PhoneCallActivity;
 
 public class ContactsActivity extends Activity {
 
@@ -33,6 +37,7 @@ public class ContactsActivity extends Activity {
 	
 	ListView lv;
 	EditText edSearch;
+	TextView tv;
 	
 	ImageButton btnAddCTSmall;
 	
@@ -43,8 +48,6 @@ public class ContactsActivity extends Activity {
 	
 	Contacts contactSelected = null;
 	Contacts ct = null;
-	private int position=-1;
-	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -55,6 +58,9 @@ public class ContactsActivity extends Activity {
 		SetLayout();
 		setEventClick();
 		//fakeData();
+		
+		contactsAdapter.SortList();
+		contactsAdapter.notifyDataSetChanged();
 		
 		//bật chức năng lọc cho listview
 		lv.setTextFilterEnabled(true);
@@ -95,12 +101,21 @@ public class ContactsActivity extends Activity {
 	}
 	
 	@Override
+	protected void onResume()
+	{
+		contactsAdapter.SortList();
+		contactsAdapter.notifyDataSetChanged();
+		super.onResume();
+	}
+	
+	@Override
 	protected void onStop()
 	{
 //		if(edSearch != null)
 //		{
 //			edSearch.setText(null);
 //		}
+		contactsAdapter.SortList();
 		SavePreferences(arrContacts);
 		super.onStop();
 	}
@@ -138,7 +153,6 @@ public class ContactsActivity extends Activity {
 					int arg2, long arg3) 
 			{
 				contactSelected=arrContacts.get(arg2);
-				position = arg2;
 				return false;
 			}
 		});
@@ -159,7 +173,7 @@ public class ContactsActivity extends Activity {
 		switch (item.getItemId()) 
 		{
 		case R.id.menuCall:
-			
+			doCallSO();
 			break;
 		case R.id.menuEdit:
 			doEditContact();
@@ -213,15 +227,16 @@ public class ContactsActivity extends Activity {
 	
 	public void doSaveContact()
 	{
-		String number;
-		Intent intent1 = getIntent();
-		Bundle bundle = intent1.getBundleExtra("NUM_EXTRA");
-		number = bundle.getString("NUMBER");
-		
-		bundle.putString("NUMBER", number);
+//		String number;
+//		Intent intent1 = getIntent();
+//		Bundle bundleIN = intent1.getBundleExtra("NUM_EXTRA");
+//		number = bundleIN.getString("NUMBER");
+//		
+//		Bundle bundleOUT = new Bundle();
+//		bundleOUT.putString("NUMBER", number);
 		
 		Intent intent = new Intent(this, AddContactActivity.class);
-		intent.putExtra("NUM", bundle);
+		//intent.putExtra("NUM", bundleOUT);
 		startActivityForResult(intent, ACTIVITY_OPEN_ADD_CONT);
 	}
 
@@ -290,5 +305,10 @@ public class ContactsActivity extends Activity {
 		{
 			Log.e("InternalStorage", e.getMessage());
 		}
+	}
+	
+	public void doCallSO()
+	{
+		PhoneCallActivity.currentInputNum = contactSelected.getNum(); 
 	}
 }

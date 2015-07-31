@@ -1,6 +1,7 @@
 package chau.vpphone;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import android.annotation.SuppressLint;
@@ -67,6 +68,10 @@ public class ContactsAdapter extends ArrayAdapter<Contacts> implements Filterabl
 		notifyDataSetChanged();
 	}
 	
+	public void SortList()
+	{
+		Collections.sort(origlistContact_temp, Contacts.compare);
+	}
 //	@Override
 //	public Filter getFilter()
 //	{

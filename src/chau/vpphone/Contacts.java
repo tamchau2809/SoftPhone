@@ -1,9 +1,11 @@
 package chau.vpphone;
 
+import android.annotation.SuppressLint;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 
-public class Contacts implements Serializable
+public class Contacts implements Serializable, Comparable<Contacts>
 {
 	private static final long serialVersionUID = 1L;
 	String name;
@@ -47,4 +49,22 @@ public class Contacts implements Serializable
 	{
 		this.address = ad;
 	}
+
+	@Override
+	public int compareTo(Contacts another) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public static Comparator<Contacts> compare = new Comparator<Contacts>() {
+		
+		@SuppressLint("DefaultLocale")
+		@Override
+		public int compare(Contacts lhs, Contacts rhs) {
+			// TODO Auto-generated method stub
+			String name1 = lhs.getName().toLowerCase().trim();
+			String name2 = rhs.getName().toLowerCase().trim();
+			return name1.compareTo(name2);
+		}
+	};
 }

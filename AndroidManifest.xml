@@ -74,7 +74,7 @@
         </activity>
         
         <receiver 
-        	android:name="chau.vvphone.IncomingCallReceiver"
+        	android:name=".IncomingCallReceiver"
        		android:label="Call Receiver"
         />
     </application>
