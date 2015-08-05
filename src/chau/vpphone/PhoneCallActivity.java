@@ -29,6 +29,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class PhoneCallActivity extends Activity implements OnClickListener {
 
@@ -44,18 +45,15 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	
 	static EditText edPhoneNum;
 	
-	public static final int OPEN_LOGIN = 1;
-    public static final int LOGIN_SUCCESS = 2;
-    public static final int OPEN_EDIT = 3;
-    public static final int EDIT_SUCCESS = 4;
-    public static final int GET_USER_INFO = 5;
-    public static final int USER_CONNECTED = 6;
+	public static final int GET_NUM = 1;
+    public static final int GOT_NUM = 2;
+    public static final int SEND_NUM = 3;
+    public static final int RECEIVED_NUM = 4;
     
     public static SipManager sipManager = null;
     public static SipProfile profile = null;
     public static SipAudioCall call = null;
     public static IncomingCallReceiver callReceiver;
-    Context context;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -70,7 +68,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			@Override
 			public void onTextChanged(CharSequence s, int start, int before, int count) {
 				// TODO Auto-generated method stub
-				enableCall();
+				enableCallBtn();
 			}
 			
 			@Override
@@ -83,7 +81,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			@Override
 			public void afterTextChanged(Editable s) {
 				// TODO Auto-generated method stub
-				enableCall();
+				enableCallBtn();
 			}
 		});		
 		
@@ -93,7 +91,8 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				Intent intent = new Intent(PhoneCallActivity.this, ContactsActivity.class);
-				startActivity(intent);
+				AddContactActivity.checkNum = false;
+				startActivityForResult(intent, GET_NUM);
 			}
 		});
 		
@@ -103,7 +102,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				Intent intent = new Intent(PhoneCallActivity.this, ContactsActivity.class);
-				
+				AddContactActivity.checkNum = true;
 				Bundle bundle = new Bundle();
 				bundle.putString("NUMBER", edPhoneNum.getText().toString());
 				intent.putExtra("NUM_EXTRA", bundle);
@@ -196,8 +195,20 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-		if (id == R.id.action_Login) {
+		if (id == R.id.action_Login)
+		{
 			Intent intent = new Intent(PhoneCallActivity.this, LoginActivity.class);
+			startActivity(intent);
+		}
+		if(id == R.id.action_LogOut)
+		{
+			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+			prefs.edit().clear().apply();
+			updateStatus("Logged Out!");
+		}
+		if(id == R.id.action_About)
+		{
+			Intent intent = new Intent(this, AboutActivity.class);
 			startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
@@ -225,7 +236,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		{
 			call.close();
 		}
-		closeLocalProfile();
+		//closeLocalProfile();
 		if(callReceiver != null)
 		{
 			this.unregisterReceiver(callReceiver);
@@ -235,7 +246,8 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		// TODO Auto-generated method stub
-		
+		Button b1 = (Button)v;
+	    edPhoneNum.setText(edPhoneNum.getText().toString()+b1.getText().toString());
 	}
 	
 	public void getFormWiget()
@@ -261,7 +273,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		edPhoneNum = (EditText)findViewById(R.id.edPhoneNum);
 	}
 	
-	public void enableCall()
+	public void enableCallBtn()
 	{
 		boolean isReady = edPhoneNum.getText().toString().length() > 0;
 		btnCall.setEnabled(isReady);
@@ -339,6 +351,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
         try {
             if (profile != null) {
                 sipManager.close(profile.getUriString());
+                Log.d("CLOSE", "CLOSE_PROFILE");
             }
         } catch (Exception ee) {
             Log.d("WalkieTalkieActivity/onDestroy", "Failed to close local profile.", ee);
@@ -384,32 +397,6 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
         calledDialog.show();
     }
 	
-//	public static void CallToSO()
-//	{
-//		AlertDialog.Builder callingDialog = new AlertDialog.Builder(this);
-//		callingDialog.setTitle("Calling To " + edPhoneNum.getText());
-//		currentInputNum = edPhoneNum.getText().toString();
-//		initCall();
-//		callingDialog.setNegativeButton("Hang Out", 
-//				new DialogInterface.OnClickListener() {
-//			
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				// TODO Auto-generated method stub
-//				if(call != null)
-//				{
-//					try
-//					{
-//						call.endCall();
-//					} catch (SipException e)
-//					{}
-//					call.close();
-//				}
-//			}
-//		});
-//		callingDialog.show();
-//	}
-	
 	public static void initCall()
 	{
 		try
@@ -426,7 +413,8 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 				
 				@Override
 				public void onCallEnded(SipAudioCall call)
-				{}
+				{
+				}
 			};
 			call = sipManager.makeAudioCall(profile.getUriString(), 
 					currentInputNum, listener, 30);			
@@ -446,6 +434,17 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			{
 				call.close();
 			}
+		}
+	}
+	
+	@Override
+	protected void onActivityResult(int request, int result, Intent data)
+	{
+		super.onActivityResult(request, result, data);
+		if(result == GOT_NUM)
+		{
+			Bundle bundle = data.getBundleExtra("numExtra");
+			edPhoneNum.setText(bundle.getString("Contact_num"));
 		}
 	}
 }

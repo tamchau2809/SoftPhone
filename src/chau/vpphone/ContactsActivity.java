@@ -46,6 +46,28 @@ public class ContactsActivity extends Activity {
 	ArrayList<Contacts> arrContacts;
 	AppContext appContext;
 	
+	TextWatcher watcher = new TextWatcher() {
+		
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+			// TODO Auto-generated method stub
+			contactsAdapter.cusFilter(s.toString());
+		}
+		
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,
+				int after) {
+			// TODO Auto-generated method stub
+			
+		}
+		
+		@Override
+		public void afterTextChanged(Editable s) {
+			// TODO Auto-generated method stub
+			
+		}
+	};
+	
 	Contacts contactSelected = null;
 	Contacts ct = null;
 	@Override
@@ -66,27 +88,7 @@ public class ContactsActivity extends Activity {
 		lv.setTextFilterEnabled(true);
 		//Edittext dùng để search
 		edSearch = (EditText)findViewById(R.id.edSearch);
-		edSearch.addTextChangedListener(new TextWatcher() {
-			
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				// TODO Auto-generated method stub
-				contactsAdapter.cusFilter(s.toString());
-			}
-			
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count,
-					int after) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void afterTextChanged(Editable s) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
+		edSearch.addTextChangedListener(watcher);
 		
 		btnAddCTSmall = (ImageButton)findViewById(R.id.btnAddCT);
 		btnAddCTSmall.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +97,7 @@ public class ContactsActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				doSaveContact();
-				//SavePreferences(arrContacts);
+				SavePreferences(arrContacts);
 			}
 		});
 	}
@@ -111,13 +113,17 @@ public class ContactsActivity extends Activity {
 	@Override
 	protected void onStop()
 	{
-//		if(edSearch != null)
-//		{
-//			edSearch.setText(null);
-//		}
 		contactsAdapter.SortList();
+		edSearch.removeTextChangedListener(watcher);
 		SavePreferences(arrContacts);
 		super.onStop();
+	}
+	
+	@Override
+	protected void onDestroy()
+	{
+		edSearch.removeTextChangedListener(watcher);
+		super.onDestroy();
 	}
 	
 	public void fakeData()
@@ -226,17 +232,18 @@ public class ContactsActivity extends Activity {
 	}
 	
 	public void doSaveContact()
-	{
-//		String number;
-//		Intent intent1 = getIntent();
-//		Bundle bundleIN = intent1.getBundleExtra("NUM_EXTRA");
-//		number = bundleIN.getString("NUMBER");
-//		
-//		Bundle bundleOUT = new Bundle();
-//		bundleOUT.putString("NUMBER", number);
-		
+	{	
 		Intent intent = new Intent(this, AddContactActivity.class);
-		//intent.putExtra("NUM", bundleOUT);
+		if(AddContactActivity.checkNum)
+		{
+			Intent i = getIntent();
+			Bundle b = i.getBundleExtra("NUM_EXTRA");
+			String num = b.getString("NUMBER");
+			
+			Bundle bun = new Bundle();
+			bun.putString("N", num);
+			intent.putExtra("N1", bun);
+		}
 		startActivityForResult(intent, ACTIVITY_OPEN_ADD_CONT);
 	}
 
@@ -309,8 +316,12 @@ public class ContactsActivity extends Activity {
 	
 	public void doCallSO()
 	{
-		PhoneCallActivity.currentInputNum = contactSelected.getNum();
-		AlertDialog.Builder callingDialog = new AlertDialog.Builder(this);
-		callingDialog.show();
+		Intent intent = getIntent();
+		Bundle bundle = new Bundle();
+		
+		bundle.putString("Contact_num", contactSelected.getNum());
+		intent.putExtra("numExtra", bundle);
+		setResult(PhoneCallActivity.GOT_NUM, intent);
+		finish();
 	}
 }

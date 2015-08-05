@@ -10,9 +10,15 @@
         app:showAsAction="never"/>
     
     <item 
-        android:id="@+id/action_EditAcc"
+        android:id="@+id/action_LogOut"
         android:orderInCategory="100"
         android:title="Log Out"
+        />
+    
+    <item
+        android:id="@+id/action_About"
+        android:orderInCategory="100"
+        android:title="About"
         />
 
 </menu>

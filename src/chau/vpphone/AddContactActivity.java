@@ -11,6 +11,7 @@ import android.widget.EditText;
 public class AddContactActivity extends Activity {
 	Button btnCancel, btnSave;
 	EditText edContactName, edPhoneNum, edAdd, edName;
+	public static boolean checkNum;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -18,29 +19,31 @@ public class AddContactActivity extends Activity {
 		setContentView(R.layout.activity_edit_contact);
 		
 		getFormWigets();
+		if(checkNum)
+		{
+			getNumFromMain();
+		}
 		onClickEvent();
 	}
 	
 	public void getFormWigets()
 	{
-		String number;
 		btnCancel = (Button)findViewById(R.id.btnCancel);
 		btnSave = (Button)findViewById(R.id.btnEditSaveContact);
 		
-		edName = (EditText)findViewById(R.id.edPhoneNum);
-		
-//		Intent intent = getIntent();
-//		Bundle bundle = intent.getBundleExtra("NUM");
-//		number = bundle.getString("NUMBER");
-		
+		edName = (EditText)findViewById(R.id.edPhoneNum);		
 		edContactName = (EditText)findViewById(R.id.edEditContactName);
 		edPhoneNum = (EditText)findViewById(R.id.edEditSavePhonNum);
-//		if(number != null)
-//		{
-//			edPhoneNum.setText(number);
-//		}
-//		else edPhoneNum.setText(null);
 		edAdd = (EditText)findViewById(R.id.edEditSaveAddress);
+	}
+	
+	void getNumFromMain()
+	{
+		String num;
+		Intent intent = getIntent();
+		Bundle bundle = intent.getBundleExtra("N1");
+		num = bundle.getString("N");
+		if(num != null) edPhoneNum.setText(num);
 	}
 	
 	public void onClickEvent()

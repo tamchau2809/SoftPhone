@@ -32,7 +32,8 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" android:name="AppContext">
+        android:theme="@style/AppTheme" 
+        android:name="chau.vpphone.AppContext">
         <activity
             android:name=".PhoneCallActivity"
             android:label="@string/app_name" >
@@ -44,7 +45,7 @@
         </activity>
         <activity
             android:name=".AboutActivity"
-            android:label="@string/title_activity_about" >
+            android:label="@string/title_activity_about" android:theme="@style/Theme.AppCompat.Dialog">
         </activity>
         <activity
             android:name=".LoginActivity"
