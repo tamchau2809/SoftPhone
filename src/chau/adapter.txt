@@ -25,7 +25,6 @@ public class ContactsAdapter extends ArrayAdapter<Contacts> implements Filterabl
 //	private ContactsFilter filter;
 	String name;
 	String num;
-	ContentResolver roshan;
 	
 	public ContactsAdapter(Activity context, int resource, 
 			List<Contacts> objects) {
@@ -37,19 +36,19 @@ public class ContactsAdapter extends ArrayAdapter<Contacts> implements Filterabl
 		this.arrContact.addAll(origlistContact_temp);
 	}
 	
-	public void getContact(ContentResolver resolver)
-	{
-		Contacts object = new Contacts();
-		Cursor phone = resolver.query(Phone.CONTENT_URI, null, null, 
-				null, null);
-		while(phone.moveToNext())
-		{
-			object.name = phone.getString(phone.getColumnIndex(Phone.DISPLAY_NAME));
-			object.number = phone.getString(phone.getColumnIndex(Phone.NUMBER));
-			origlistContact_temp.add(object);
-		}
-		phone.close();
-	}
+//	public void getContact(ContentResolver resolver)
+//	{
+//		Cursor phone = resolver.query(Phone.CONTENT_URI, null, null, 
+//				null, null);
+//		Contacts object;
+//		while(phone.moveToNext())
+//		{
+//			object.name = phone.getString(phone.getColumnIndex(Phone.DISPLAY_NAME));
+//			object.number = phone.getString(phone.getColumnIndex(Phone.NUMBER));
+//		}
+//		phone.close();
+//		origlistContact_temp.add(object)
+//	}
 
 	@SuppressLint("ViewHolder")
 	@Override
@@ -61,8 +60,8 @@ public class ContactsAdapter extends ArrayAdapter<Contacts> implements Filterabl
 		TextView tvViewNumber = (TextView)convertView.findViewById(R.id.tvViewNumber);
 		
 		Contacts ct = origlistContact_temp.get(position);
-		tvViewNameContact.setText(ct.getName().trim());
-		tvViewNumber.setText(ct.getNum().trim());
+		tvViewNameContact.setText(ct.getName());
+		tvViewNumber.setText(ct.getNum());
 		return convertView;
 	}
 	

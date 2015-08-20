@@ -12,7 +12,7 @@
     <item 
         android:id="@+id/action_LogOut"
         android:orderInCategory="100"
-        android:title="Log Out"
+        android:title="Sign Out"
         />
     
     <item

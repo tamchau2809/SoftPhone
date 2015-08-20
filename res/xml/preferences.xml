@@ -4,6 +4,7 @@
         android:name="SIP Username"
         android:summary="Username for your SIP Account"
         android:defaultValue=""
+        
         android:title="Enter Username"
         android:key="namePref" />
     <EditTextPreference

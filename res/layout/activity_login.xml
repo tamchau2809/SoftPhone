@@ -1,82 +1,103 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:layout_height="fill_parent" >
     
     <TextView
+        android:id="@+id/tvkoxai"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#EDAB21"
         android:gravity="center"
-        android:paddingTop="40dp"
-        android:text="Login:"
+        android:text="Login"
+        android:textColor="#FFFFFF"
         android:textSize="30sp"
         android:textStyle="bold" />
     
-    <LinearLayout 
-	    android:layout_width="match_parent"
-	    android:layout_height="match_parent"
-	    android:paddingTop="40dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-	    android:gravity="center"
-	    android:orientation="vertical">
-        
-        <EditText
-            android:textCursorDrawable="@null"
-            android:id="@+id/setup_username"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Username"
-            android:textColor="#000000"
-            android:inputType="textEmailAddress"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:singleLine="true" 
-            android:background="@drawable/setup_field_background" />
-        
-        <EditText
-            android:textCursorDrawable="@null"
-            android:id="@+id/setup_password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Password"
-            android:textColor="#000000"
-            android:inputType="textPassword"
-            android:layout_marginTop="5dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:singleLine="true" 
-            android:background="@drawable/setup_field_background"/>
-        
-        <EditText
-            android:textCursorDrawable="@null"
-            android:id="@+id/setup_domain"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Domain"
-            android:textColor="#000000"
-            android:inputType="text"
-            android:layout_marginTop="5dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:singleLine="true" 
-            android:background="@drawable/setup_field_background"/>
-        
-        <CheckBox 
-            android:id="@+id/cbRemember"
-            android:layout_marginTop="15dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Remember Me"/>
-        
-        <Button
-            android:id="@+id/btnLogin02"
-            android:layout_width="97dp"
-            android:layout_height="wrap_content"	            
-            android:text="Login"
-            android:textSize="20sp" 
-            android:layout_marginTop="5dp"/>
-        
-    </LinearLayout>
+    <TextView
+        android:id="@+id/tvkoxai1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/tvkoxai"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:text="Username:"
+        android:textSize="25sp"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    
+    <EditText
+        android:id="@+id/setup_username"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvkoxai1"
+        android:layout_centerHorizontal="true"
+        android:singleLine="true"
+        android:hint="enter username.."
+        android:textSize="25sp" >
 
-</LinearLayout>
+        <requestFocus />
+    </EditText>
+    
+    <TextView
+        android:id="@+id/tvkoxai2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvkoxai1"
+        android:layout_below="@+id/setup_username"
+        android:layout_marginTop="10dp"
+        android:text="Password"
+        android:textSize="25sp"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <EditText
+        android:id="@+id/setup_password"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvkoxai2"
+        android:hint="Password"
+        android:textSize="25sp"
+        android:inputType="textPassword"
+        android:singleLine="true"
+        android:layout_centerHorizontal="true" />
+    
+    <TextView
+        android:id="@+id/tvkoxai3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/tvkoxai1"
+        android:layout_below="@+id/setup_password"
+        android:layout_marginTop="10dp"
+        android:text="Domain:"
+        android:textSize="25sp"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+    
+    <EditText
+        android:id="@+id/setup_domain"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvkoxai3"
+        android:hint="xxx.xxx.xxx.xxx"
+        android:textSize="25sp"
+        android:singleLine="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="90dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignRight="@+id/tvkoxai2"
+        android:layout_below="@+id/setup_domain"
+        android:layout_marginTop="15dp"
+        android:text="Cancel" />
+
+    <Button
+        android:id="@+id/btnOkay"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/btnCancel"
+        android:layout_alignBottom="@+id/btnCancel"
+        android:layout_toRightOf="@+id/btnCancel"
+        android:text="Okay" />
+    
+</RelativeLayout> 

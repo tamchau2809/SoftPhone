@@ -6,11 +6,13 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
-import android.net.sip.SipException;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -28,6 +30,7 @@ import chau.vpphone.PhoneCallActivity;
 
 public class ContactsActivity extends Activity {
 
+	Contacts ct = new Contacts();
 	//Khai báo các Request + Result code để xử lý Intent for result
 	public static final int ACTIVITY_OPEN_ADD_CONT=1;
 	public static final int ACTIVITY_OPEN_EDIT_CONT=2;
@@ -43,7 +46,7 @@ public class ContactsActivity extends Activity {
 	
 	ContactsAdapter contactsAdapter = null;
 	
-	ArrayList<Contacts> arrContacts;
+	ArrayList<Contacts> arrContacts = new ArrayList<Contacts>();
 	AppContext appContext;
 	
 	TextWatcher watcher = new TextWatcher() {
@@ -69,14 +72,14 @@ public class ContactsActivity extends Activity {
 	};
 	
 	Contacts contactSelected = null;
-	Contacts ct = null;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_contacts);
 		
-		appContext = (AppContext)getApplication();
-		arrContacts = appContext.getContacts();
+//		appContext = (AppContext)getApplication();
+//		arrContacts = appContext.getContacts();
+		getContact();
 		SetLayout();
 		setEventClick();
 		//fakeData();
@@ -97,6 +100,7 @@ public class ContactsActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				doSaveContact();
+				contactsAdapter.notifyDataSetChanged();
 				SavePreferences(arrContacts);
 			}
 		});
@@ -105,9 +109,12 @@ public class ContactsActivity extends Activity {
 	@Override
 	protected void onResume()
 	{
+		edSearch.addTextChangedListener(watcher);
 		contactsAdapter.SortList();
 		contactsAdapter.notifyDataSetChanged();
+		SavePreferences(arrContacts);
 		super.onResume();
+		SavePreferences(arrContacts);
 	}
 	
 	@Override
@@ -124,6 +131,51 @@ public class ContactsActivity extends Activity {
 	{
 		edSearch.removeTextChangedListener(watcher);
 		super.onDestroy();
+	}
+	
+	public void getContact()
+	{
+	         ContentResolver cr = getContentResolver();
+	         Cursor cur = cr.query(ContactsContract.Contacts.CONTENT_URI,
+	                null, null, null, null);
+	         String name, phone = null, email = null;
+
+	         if (cur.getCount() > 0) {
+	            while (cur.moveToNext()) {
+	                String id = cur.getString(cur.getColumnIndex(ContactsContract.Contacts._ID));
+	                name = cur.getString(cur.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+	                
+	                if (Integer.parseInt(cur.getString(cur.getColumnIndex(ContactsContract.Contacts.HAS_PHONE_NUMBER))) > 0) {
+	                    System.out.println("name : " + name + ", ID : " + id);
+	                    ct.name = name;
+	                    // get the phone number
+	                    Cursor pCur = cr.query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,null,
+	                                           ContactsContract.CommonDataKinds.Phone.CONTACT_ID +" = ?",
+	                                           new String[]{id}, null);
+	                    while (pCur.moveToNext()) {
+	                          phone = pCur.getString(
+	                                 pCur.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+	                          System.out.println("phone" + phone);
+	                          ct.number = phone.replace(" ", "");
+	                    }
+	                    pCur.close();
+	                    
+	                    //get email address
+	                    Cursor curEmail = cr.query(ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+	                    		null,
+	                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+	                            new String[]{id}, null);
+	                    while(curEmail.moveToNext())
+	                    {
+	                    	email = curEmail.getString(curEmail.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA));
+	                    	ct.address = email;
+	                    }
+	                    curEmail.close();
+	                    ct = new Contacts(name, phone, email);
+		                arrContacts.add(ct);
+	                }
+	            }
+	       }
 	}
 	
 	public void fakeData()
@@ -170,7 +222,7 @@ public class ContactsActivity extends Activity {
 	{
 		super.onCreateContextMenu(menu, v, menuInfo);
 		getMenuInflater().inflate(R.menu.activity_menu_contact, menu);
-		menu.getItem(0).setTitle("Call To " + contactSelected.getName());
+		menu.getItem(0).setTitle("Call To [" + contactSelected.getName() + "]");
 	}
 	
 	@Override

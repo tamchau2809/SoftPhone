@@ -10,6 +10,10 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 
 import android.app.Application;
+import android.content.ContentResolver;
+import android.database.Cursor;
+import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
 import android.util.Log;
 
 public class AppContext extends Application {
@@ -37,6 +41,7 @@ public class AppContext extends Application {
 	        ct = (ArrayList<Contacts>) oi.readObject();
 	        oi.close();
 	        fIS.close();
+	    	
 	    } catch (FileNotFoundException e) {
 	        Log.e("InternalStorage", e.getMessage());       
 	    } catch (IOException e) {
