@@ -13,5 +13,6 @@
     <string name="title_activity_add_contacts">Add Contacts</string>
     <string name="title_activity_edit_contact">Edit Contact</string>
     <string name="title_activity_history">History</string>
+    <string name="title_activity_on_calling">Calling</string>
 
 </resources>

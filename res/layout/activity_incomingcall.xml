@@ -46,6 +46,7 @@
         android:layout_marginLeft="42dp"
         android:layout_marginStart="42dp"
         android:layout_marginTop="15dp"
+        android:onClick="acceptCall"
         android:text="Accept" />
 
     <Button
@@ -56,6 +57,7 @@
         android:layout_alignBottom="@+id/btnAccept"
         android:layout_marginLeft="32dp"
         android:layout_marginStart="32dp"
+        android:onClick="rejectcall"
         android:layout_toRightOf="@+id/btnAccept"
         android:layout_toEndOf="@+id/btnAccept"
         android:text="Reject" />
