@@ -5,49 +5,70 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
-import android.net.sip.SipProfile;
 import android.net.sip.SipAudioCall;
-import android.net.sip.SipAudioCall.Listener;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
-import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressLint("InlinedApi")
-public class IncomingCallActivity extends Activity {
+public class IncomingCallActivity extends Activity implements OnClickListener{
 	
 	FileOutputStream fos;
 	ObjectOutputStream oos;
 	File file;
-	static boolean callHeld = true;
-	static boolean flag;
-	boolean accept;
-	SipAudioCall incomingCall = null;
-	SipAudioCall.Listener listener;
-	private Handler mHandler = new Handler();
+	
+	Button btn1, btn2, btn3, btn4, btn5,
+	btn6, btn7, btn8, btn9, btn0,
+	btnStar, btnSharp;
+	EditText edTransfer;
+	
+	TextView tvTime;
+	ImageButton btnHold, btnSpeaker, btnEndCall;
+	View.OnClickListener listenerHold, listenerSpeaker, listenerEndcall;
+	
+	boolean holdIsPressed = true;
+	boolean speakerIsPressed = true;
+	
+	public static boolean accept;
+	
+	public static SipAudioCall incomingCall = null;
 	AudioManager am;
 	NotificationManager mNotificationManager;
-	boolean missed = false;
-	String peerAddress;
-	public static String PARAM_OUT_MSG = "omsg";
-	public static String PARAM_OUT_MSG2 = "omsg2";
+	String name;
 	
+	@SuppressLint("NewApi")
 	@Override
 	public void onCreate(Bundle save)
 	{
 		super.onCreate(save);
-		setContentView(R.layout.activity_incomingcall);
+		setContentView(R.layout.activity_on_calling);
+		
+		initWiget();
+		initListener();
+		setOnClick();
+		
+		Intent i = getIntent();
+		Bundle bundle = i.getBundleExtra("ADD");
+		name = bundle.getString("INCOM");
+		
+		this.setFinishOnTouchOutside(false);
+		
+		btnHold.setOnClickListener(listenerHold);
+		btnSpeaker.setOnClickListener(listenerSpeaker);
+		btnEndCall.setOnClickListener(listenerEndcall);
 		
 		am = (AudioManager)getSystemService(AUDIO_SERVICE);
 		am.setMode(AudioManager.MODE_RINGTONE);
@@ -55,216 +76,8 @@ public class IncomingCallActivity extends Activity {
 		String ns = NOTIFICATION_SERVICE;
 		mNotificationManager = (NotificationManager)getSystemService(ns);
 		
-		missed = false;
+		takeCall();
 		
-		Intent intent = getIntent();
-		final Context c = getApplicationContext();
-		try
-		{
-			listener = new SipAudioCall.Listener()
-			{
-				@Override
-				public void onCallEstablished(final SipAudioCall call)
-				{
-					runOnUiThread(new Runnable() {
-						public void run() {
-							Toast.makeText(c, "Established", Toast.LENGTH_LONG).show();
-						}
-					});
-					if(call != null && call.isInCall() && !callHeld)
-					{
-						callHeld = true;
-						sendUpdateBroadcast("" + call.getPeerProfile().getUserName());
-					}
-					else if(call != null && call.isInCall() && callHeld)
-					{
-						callHeld = false;
-						sendUpdateBroadcast("Call held");
-						return;
-					}
-				}
-				
-				@SuppressWarnings("deprecation")
-				@Override
-				public void onRinging(SipAudioCall call, SipProfile caller)
-				{
-					try
-					{
-						if(accept)
-						{
-							runOnUiThread(new Runnable() {
-								public void run() 
-								{
-									Toast.makeText(c, "Ring Ring Ring", Toast.LENGTH_LONG).show();
-								}
-							});
-							call.answerCall(30);
-							call.startAudio();
-							call.setSpeakerMode(true);
-							AudioManager am;
-							am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-							am.setMode(AudioManager.MODE_IN_COMMUNICATION);
-							if(PhoneCallActivity.speakerPhone)
-							{
-								am.setSpeakerphoneOn(true);
-							}
-//							if(PhoneCallActivity.walkieMode && !call.isMuted())
-//							{
-//								call.toggleMute();
-//							}
-							PhoneCallActivity.call = call;
-							callHeld = false;
-							PhoneCallActivity.startTime = SystemClock.elapsedRealtime();
-							SimpleDateFormat sdf = new SimpleDateFormat("H:mmaa    EEEE, dd MM, yyyy");
-							PhoneCallActivity.callDate = sdf.format(new Date());
-							PhoneCallActivity.sipAddress = "sip:"+call.getPeerProfile().getUserName() + "@" + call.getPeerProfile().getSipDomain();
-							PhoneCallActivity.outgoingCall = false;
-							sendUpdateBroadcast(""+call.getPeerProfile().getUserName() + "@" + call.getPeerProfile().getSipDomain());
-							long when = System.currentTimeMillis();
-							
-							Intent notificationIntent = new Intent(getApplicationContext(), PhoneCallActivity.class);
-							notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-							PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0, notificationIntent, 0);
-							
-							Notification noti = new Notification(R.drawable.ic_launcher, "", when);
-							noti.setLatestEventInfo(getApplicationContext(), "VPhone", "Return to ongoing call", contentIntent);
-							noti.flags |= Notification.FLAG_ONGOING_EVENT;
-							noti.flags |= Notification.FLAG_NO_CLEAR;
-							mNotificationManager.notify(PhoneCallActivity.HELLO_ID, noti);
-						}
-						else
-						{
-							sendUpdateBroadcast("Rejected");
-							missed = true;
-							call.endCall();
-							logMissedCall();
-						}
-					}
-					catch(Exception e)
-					{
-						e.printStackTrace();
-					}
-				}
-				
-				@Override
-				public void onRingingBack(SipAudioCall call)
-				{
-					Toast.makeText(c, "RingingBack", Toast.LENGTH_LONG).show();
-				}
-				
-				@Override
-				public void onCalling(SipAudioCall call)
-				{
-					Toast.makeText(c, "Callingback", Toast.LENGTH_LONG).show();
-				}
-				
-				@Override
-				public void onError(SipAudioCall call, final int errorCode, final String errorMessage)
-				{
-					runOnUiThread(new Runnable() {
-						public void run() {
-							Toast.makeText(c, "onError "+" "+errorCode+" "+errorMessage, Toast.LENGTH_LONG).show();
-						}
-					});
-				}
-				
-				@Override
-				public void onCallBusy(SipAudioCall call)
-				{
-					runOnUiThread(new Runnable() {
-						public void run() {
-							Toast.makeText(c, "busy.. beep beep...", Toast.LENGTH_LONG).show();
-						}
-					});
-				}
-				
-				@Override
-				public void onCallHeld(SipAudioCall call)
-				{
-					runOnUiThread(new Runnable() {
-						public void run() {
-							Toast.makeText(c, "onCallHeld", Toast.LENGTH_LONG).show();
-						}
-					});
-					callHeld = false;
-					sendUpdateBroadcast("Call Held");
-					super.onCallHeld(call);
-				}
-				
-				@Override
-				public void onCallEnded(SipAudioCall call)
-				{
-					if(!missed)
-					{
-						sendUpdateBroadcast("Call ended by other person");
-						runOnUiThread(new Runnable() {
-							public void run() {
-								Toast.makeText(c, "onCallEnded", Toast.LENGTH_LONG).show();
-							}
-						});
-						try
-						{
-							PhoneCallActivity.stopTime = SystemClock.elapsedRealtime();
-							long miliSecs = PhoneCallActivity.stopTime - PhoneCallActivity.startTime;
-							int secs = (int)(miliSecs / 1000) %60;
-							int mins = (int)((miliSecs / (1000*60)) %60);
-							int hours = (int)((miliSecs / (1000*60*60)));
-							StringBuilder sb = new StringBuilder(64);
-							if(hours > 0)
-							{
-								sb.append(hours);
-								sb.append("hrs");
-							}
-							sb.append(mins);
-							sb.append("mins");
-							sb.append(secs);
-							sb.append("secs");
-							PhoneCallActivity.callDuration = sb.toString();
-							PhoneCallActivity.startTime = 0;
-							HistoryInfo hInfo = new HistoryInfo(PhoneCallActivity.sipAddress.substring(4), 
-									PhoneCallActivity.callDate, PhoneCallActivity.callDuration, PhoneCallActivity.outgoingCall, false);
-							AudioManager am;
-							am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-							am.setMode(AudioManager.MODE_NORMAL);
-							am.setSpeakerphoneOn(false);
-							
-							file = new File("/data/data/chau.vpphone/files/" + PhoneCallActivity.FILENAME);
-							if(!file.exists())
-							{
-								fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
-								oos = new ObjectOutputStream(fos);
-							}
-							else
-							{
-								fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
-								oos = new AppendableObjectOutputStream(fos);
-							}
-						}
-						catch(Exception e)
-						{
-							Toast toast=Toast.makeText(c, "Unable to enter data to file "+e, Toast.LENGTH_LONG);
-                			toast.show();
-						}
-					}
-					missed = false;
-				}
-			};
-			Toast.makeText(c, "onReceive 1", Toast.LENGTH_LONG).show();
-			incomingCall = PhoneCallActivity.sipManager.takeAudioCall(intent, listener);
-			peerAddress=incomingCall.getPeerProfile().getUserName()+"@"+incomingCall.getPeerProfile().getSipDomain();
-			TextView tv = (TextView)findViewById(R.id.tvIncomingCall);
-			tv.append("\n"+incomingCall.getPeerProfile().getUserName()+"@"+incomingCall.getPeerProfile().getSipDomain());
-			Toast.makeText(c, "onReceive 2", Toast.LENGTH_LONG).show();
-			mHandler.postDelayed(myRunnable, 30000);
-		}
-		catch(Exception e)
-		{
-			Toast.makeText(c, "Excep" + e, Toast.LENGTH_SHORT).show();
-			if(incomingCall != null)
-			{
-				incomingCall.close();
-			}
-		}
 	}
 	
 	@Override
@@ -273,98 +86,224 @@ public class IncomingCallActivity extends Activity {
 		
 	}
 	
-	public void acceptCall(View v)
-	{
-		mHandler.removeCallbacks(myRunnable);
-		accept = true;
-		am.setMode(AudioManager.MODE_IN_COMMUNICATION);
-		incomingCall.setListener(listener, true);
-		Intent i = new Intent(this, PhoneCallActivity.class);
-		i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-		i.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-		startActivity(i);
-		this.finish();
-	}
-	
-	public void rejectCall(View v)
-	{
-		mHandler.removeCallbacks(myRunnable);
-		accept = false;
-		am.setMode(AudioManager.MODE_NORMAL);
-		incomingCall.setListener(listener, true);
-		this.finish();
-	}
-
-	public void sendUpdateBroadcast(String text)
-	{
-		Intent broadcastIntent = new Intent();
-    	//broadcastIntent.setAction(IncomingCallReceiver.ACTION_UPDATE);
-    	broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-    	broadcastIntent.putExtra(PARAM_OUT_MSG, text);
-    	sendBroadcast(broadcastIntent);
-	}
-	
-	public void logMissedCall()
+	@SuppressLint("SimpleDateFormat")
+	public void takeCall()
 	{
 		try
 		{
-    		int seconds = 0;
-    		int minutes = 0;
-    		StringBuilder sb = new StringBuilder(64);
-    		sb.append(minutes);
-    		sb.append(" mins ");
-    		sb.append(seconds);
-    		sb.append(" secs");
-    		PhoneCallActivity.callDuration=sb.toString();
-    		SimpleDateFormat sdf = new SimpleDateFormat("H:mmaa   EEEE, MMMM d, yyyy");
-    		Log.d("creating callinfo", "i m here");
-    		HistoryInfo hinfo=new HistoryInfo(peerAddress,sdf.format(new Date()), PhoneCallActivity.callDuration, PhoneCallActivity.outgoingCall,true);
-    		Log.d("creating callinfo done", "i m here");
-    	
-    		AudioManager am;
-    		am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-    		am.setMode(AudioManager.MODE_NORMAL);
-    		am.setSpeakerphoneOn(false);
-    	
-    		file=new File("/data/data/chau.vpphone/files/"+PhoneCallActivity.FILENAME);
-    		if(!file.exists())
-    		{
-    			fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
-    			oos=new ObjectOutputStream(fos);
-    		}
-    		else
-    		{
-    			fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
-    			oos=new AppendableObjectOutputStream(fos);
-    		}
-    		oos.writeObject(hinfo);
-    		oos.flush();
-    		fos.close();
-    		oos.close();
+			IncomingSO.accept = true;
+			incomingCall.answerCall(30);
+			incomingCall.startAudio();
+			PhoneCallActivity.startTime = SystemClock.elapsedRealtime();
+			SimpleDateFormat sdf = new SimpleDateFormat("H:mmaa   EEEE, dd MM, yyyy");
+			PhoneCallActivity.callDate = sdf.format(new Date());
+			PhoneCallActivity.outgoingCall = false;
+			PhoneCallActivity.callHeld = false;
+			incomingCall.setSpeakerMode(false);
+			am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+			am.setMode(AudioManager.MODE_IN_COMMUNICATION);	
+			if(PhoneCallActivity.speakerPhone)
+			{
+				am.setSpeakerphoneOn(true);
+			}
 		}
 		catch(Exception e)
 		{
-			Toast toast=Toast.makeText(getApplicationContext(), "Unable to enter data to file "+e, Toast.LENGTH_LONG);
-			toast.show();
+			
 		}
 	}
 	
-	private Runnable myRunnable = new Runnable() {
+	public void initWiget()
+	{
+		btnHold = (ImageButton)findViewById(R.id.btnHold);
+		btnSpeaker = (ImageButton)findViewById(R.id.btnSpeaker);
+		tvTime = (TextView)findViewById(R.id.tvTime);
+		btnEndCall = (ImageButton)findViewById(R.id.btnEndCall);
 		
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-			try
-			{
-				sendUpdateBroadcast("Call Missed");
-				am.setMode(AudioManager.MODE_NORMAL);
-				missed = true;
-				incomingCall.endCall();
-				logMissedCall();
+		btn1 = (Button)findViewById(R.id.btnOnee);
+		btn2 = (Button)findViewById(R.id.btnTwoo);
+		btn3 = (Button)findViewById(R.id.btnThreee);
+		btn4 = (Button)findViewById(R.id.btnFourr);
+		btn5 = (Button)findViewById(R.id.btnFivee);
+		btn6 = (Button)findViewById(R.id.btnSixx);
+		btn7 = (Button)findViewById(R.id.btnSevenn);
+		btn8 = (Button)findViewById(R.id.btnEightt);
+		btn9 = (Button)findViewById(R.id.btnNinee);
+		btn0 = (Button)findViewById(R.id.btnZeroo);
+		btnStar = (Button)findViewById(R.id.btnStarr);
+		btnSharp = (Button)findViewById(R.id.btnSharpp);
+		edTransfer = (EditText)findViewById(R.id.edTransfer);
+	}
+	
+	public void initListener()
+	{
+		listenerHold = new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(holdIsPressed)
+				{
+					btnHold.setImageResource(R.drawable.play);
+					try
+					{
+						if(incomingCall != null && incomingCall.isInCall())
+						{
+							incomingCall.holdCall(30);
+						}
+					}
+					catch(Exception e)
+					{
+						Toast.makeText(getApplicationContext(), e.toString(), Toast.LENGTH_SHORT).show();
+					}
+				}
+				else
+				{
+					btnHold.setImageResource(R.drawable.pause);
+					try
+					{
+						incomingCall.continueCall(30);
+					}
+					catch(Exception e)
+					{
+						
+					}
+				}
+				holdIsPressed = !holdIsPressed;
 			}
-			catch(Exception e)
-			{}
-			finish();
+		};
+		listenerSpeaker = new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(speakerIsPressed)
+				{
+					btnSpeaker.setImageResource(R.drawable.speaker);
+					if(PhoneCallActivity.am == null)
+					{
+						Context c = getApplicationContext();
+						am = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
+					}
+					am.setSpeakerphoneOn(true);
+					PhoneCallActivity.speakerPhone = true;
+					Toast.makeText(getApplicationContext(), "Loudspeaker on", Toast.LENGTH_SHORT).show();
+				}
+				else
+				{
+					btnSpeaker.setImageResource(R.drawable.speakerx);
+					if(am == null)
+					{
+						Context c = getApplicationContext();
+						am = (AudioManager)c.getSystemService(Context.AUDIO_SERVICE);
+					}
+					am.setSpeakerphoneOn(false);
+					PhoneCallActivity.speakerPhone = false;
+					Toast.makeText(getApplicationContext(), "Loudspeaker off", Toast.LENGTH_SHORT).show();
+				}
+				speakerIsPressed = !speakerIsPressed;
+			}
+		};	
+		listenerEndcall = new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(incomingCall != null)
+				{
+					endCurrentCall();
+					finish();
+				}
+			}
+		};
+	}
+	
+	@SuppressLint("SdCardPath")
+	public void endCurrentCall()
+	{
+		try
+		{
+			PhoneCallActivity.stopTime = SystemClock.elapsedRealtime();
+			long miliSecs = PhoneCallActivity.stopTime - PhoneCallActivity.startTime;
+			int sec = (int)(miliSecs / 1000) % 60;
+			int mins = (int)(miliSecs / (1000 * 60)) % 60;
+			int hrs = (int)(miliSecs / (1000 * 60 * 60));
+			StringBuilder builder = new StringBuilder(64);
+			if(hrs > 0)
+			{
+				builder.append(hrs);
+				if(hrs > 1)
+					builder.append(" hrs ");
+				else builder.append(" hr ");
+			}
+			builder.append(mins);
+			if(mins > 1)
+				builder.append(" mins ");
+			else builder.append(" min ");
+			builder.append(sec);
+			if(sec > 1)
+				builder.append(" secs ");
+			else builder.append(" sec ");
+			
+			PhoneCallActivity.callDuration = builder.toString();
+			HistoryInfo info = new HistoryInfo(name,
+					PhoneCallActivity.callDate, PhoneCallActivity.callDuration, 
+					PhoneCallActivity.outgoingCall, false);
+			PhoneCallActivity.startTime = 0;
+			
+			AudioManager am;
+			am = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+			am.setMode(AudioManager.MODE_NORMAL);
+			am.setSpeakerphoneOn(false);
+			
+			
+			file = new File("/data/data/chau.vpphone/files/" + PhoneCallActivity.FILENAME);
+			if(!file.exists())
+			{
+				fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
+				oos = new ObjectOutputStream(fos);
+			}
+			else
+			{
+				fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
+				oos = new AppendableObjectOutputStream(fos);
+			}
+			oos.writeObject(info);
+			oos.flush();
+			fos.close();
+			oos.close();
+			incomingCall.endCall();
 		}
-	};
+		catch(Exception e)
+		{
+			
+		}
+		incomingCall.close();
+	}
+	
+	@Override
+	public void onClick(View v)
+	{
+		Button b1 = (Button)v;
+		edTransfer.setText(edTransfer.getText().toString() + b1.getText().toString());
+	}
+	
+	/*
+	 * dial cho cuoc goi
+	 */
+	public void setOnClick()
+	{
+		btn1.setOnClickListener(this);
+		btn2.setOnClickListener(this);
+		btn3.setOnClickListener(this);
+		btn4.setOnClickListener(this);
+		btn5.setOnClickListener(this);
+		btn6.setOnClickListener(this);
+		btn7.setOnClickListener(this);
+		btn8.setOnClickListener(this);
+		btn9.setOnClickListener(this);
+		btn0.setOnClickListener(this);
+		btnStar.setOnClickListener(this);
+		btnSharp.setOnClickListener(this);
+	}
 }

@@ -1,5 +1,7 @@
 eclipse.preferences.version=1
 encoding//src/chau/vpphone/Contacts.java=UTF-8
 encoding//src/chau/vpphone/ContactsActivity.java=UTF-8
+encoding//src/chau/vpphone/IncomingCallActivity.java=UTF-8
 encoding//src/chau/vpphone/IncomingCallReceiver.java=UTF-8
+encoding//src/chau/vpphone/IncomingSO.java=UTF-8
 encoding//src/chau/vpphone/PhoneCallActivity.java=UTF-8

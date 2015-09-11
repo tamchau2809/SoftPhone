@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -36,6 +37,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -43,6 +45,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.View.OnClickListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -53,9 +56,11 @@ import android.widget.Toast;
 @SuppressWarnings("deprecation")
 public class PhoneCallActivity extends Activity implements OnClickListener {
 
-	String currentInputNum;
+	static String currentInputNum;
 	int inputPhoneNum;
 	int endIndex;
+	
+	String useName;
 	
 	Button btn1, btn2, btn3, btn4, btn5,
 	btn6, btn7, btn8, btn9, btn0,
@@ -65,6 +70,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	
 	TextView tvStatus;
 	static boolean exit = false;
+	static boolean shadowFiend = false;
 	
 	EditText edPhoneNum;
 	
@@ -89,7 +95,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
     static boolean callSomeone=false;
     static boolean endCall=false;
     static boolean backFromSW = false;
-    static boolean speakerPhone=true;
+    static boolean speakerPhone;
     static boolean walkieMode=true;
     static boolean callHeld=false;
     static boolean incomingCallHeld;
@@ -105,19 +111,20 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
     static boolean outgoingCall;
     static String FILENAME = "history";
     
-    File file;
+    static File file;
     FileOutputStream fos;
     ObjectOutputStream oos;
     
     NotificationManager mNotificationManager;
     
     public static SipManager sipManager;
-    public SipProfile profile = null;
+    public static SipProfile profile = null;
     public static SipAudioCall call = null; //static
     public IncomingCallReceiver callReceiver;
-    SipProfile sipTarget;
+    public static SipProfile sipTarget;
+    public static SipAudioCall.Listener listener;
     
-    AudioManager am;
+    public static AudioManager am;
     PowerManager.WakeLock mProximityWakeLock;
     PowerManager pm;
     KeyguardManager keyguardManager;
@@ -130,10 +137,14 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		eventCreated();
 		check();
 		
+		InputMethodManager ipm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+		ipm.hideSoftInputFromWindow(edPhoneNum.getWindowToken(), 0);
+		
 //		walkieMode = true;
-		speakerPhone = true;
+//		speakerPhone = true;
+		speakerPhone = false;
 		am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        am.setSpeakerphoneOn(true);
+        am.setSpeakerphoneOn(false);
 		
 //		Intent test = new Intent(this, RunReceiver.class);
 //		boolean isRunning = (PendingIntent.getBroadcast(this, 0, test, PendingIntent.FLAG_NO_CREATE) != null);
@@ -185,6 +196,8 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 	
 	public void eventCreated()
 	{
+//		edPhoneNum.setInputType(InputType.TYPE_NULL);
+		
 		watcher = new TextWatcher() {
 			
 			@Override
@@ -248,30 +261,32 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 				}
 				else
 				{
-					AlertDialog.Builder callingDialog = new AlertDialog.Builder(PhoneCallActivity.this);
-					callingDialog.setTitle("Calling To " + edPhoneNum.getText());
+//					AlertDialog.Builder callingDialog = new AlertDialog.Builder(PhoneCallActivity.this);
+//					callingDialog.setTitle("Calling To " + edPhoneNum.getText());
 					currentInputNum = edPhoneNum.getText().toString().trim();
-					initCall();
-					callingDialog.setCancelable(false);
-					callingDialog.setNegativeButton("Hang Out", 
-							new DialogInterface.OnClickListener() 
-					{					
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							// TODO Auto-generated method stub
-							if(call != null)
-							{
-								try
-								{
-									call.endCall();
-									call.close();
-									endCurrentCall();
-								} catch (SipException e)
-								{}
-							}
-						}
-					});
-					AlertDialog ad = callingDialog.show();
+					Intent intent = new Intent(getBaseContext(), OnCallingActivity.class);
+					startActivity(intent);
+//					initCall();
+//					callingDialog.setCancelable(false);
+//					callingDialog.setNegativeButton("Hang Out", 
+//							new DialogInterface.OnClickListener() 
+//					{					
+//						@Override
+//						public void onClick(DialogInterface dialog, int which) {
+//							// TODO Auto-generated method stub
+//							if(call != null)
+//							{
+//								try
+//								{
+//									call.endCall();
+//									call.close();
+//									endCurrentCall();
+//								} catch (SipException e)
+//								{}
+//							}
+//						}
+//					});
+//					AlertDialog ad = callingDialog.show();
 				}
 			}
 		};
@@ -298,9 +313,9 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				Intent intent = new Intent(PhoneCallActivity.this, HistoryActivity.class);
-				if(call != null) intent.putExtra(CALLSTATUS, call.isInCall());
-				//startActivityForResult(intent, GET_NUM_HISTORY);
-				startActivity(intent);
+//				if(call != null) intent.putExtra(CALLSTATUS, call.isInCall());
+				startActivityForResult(intent, GET_NUM_HISTORY);
+//				startActivity(intent);
 			}
 		};
 	}
@@ -521,9 +536,9 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		btnSharp = (Button)findViewById(R.id.btnSharp);
 		
 		btnContacts = (Button)findViewById(R.id.btnContact);
-		btnAddContact = (ImageButton)findViewById(R.id.btnAddContact);
-		btnCall = (ImageButton)findViewById(R.id.btnCall);
-		btnBackSpace = (ImageButton)findViewById(R.id.btnBackSpace);
+		btnAddContact = (ImageButton)findViewById(R.id.btnHold);
+		btnCall = (ImageButton)findViewById(R.id.btnEndCall);
+		btnBackSpace = (ImageButton)findViewById(R.id.btnSpeaker);
 		btnHistory = (Button)findViewById(R.id.btnHistory);
 
 		edPhoneNum = (EditText)findViewById(R.id.edPhoneNum);
@@ -571,11 +586,16 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			builder.setPassword(password);
 			profile = builder.build();
 			
+//			Intent intent = new Intent();
+//			intent.setAction("android.VPhone.INCOMING_CALL");
+//			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+//			PendingIntent pi = PendingIntent.getBroadcast(this, 
+//					0, intent, Intent.FILL_IN_DATA);
+//			sipManager.open(profile, pi, null);
+			
 			Intent intent = new Intent();
 			intent.setAction("android.VPhone.INCOMING_CALL");
-			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-			PendingIntent pi = PendingIntent.getBroadcast(this, 
-					0, intent, Intent.FILL_IN_DATA);
+			PendingIntent pi = PendingIntent.getBroadcast(this, 0, intent, Intent.FILL_IN_DATA);
 			sipManager.open(profile, pi, null);
 			
 			sipManager.setRegistrationListener(profile.getUriString(), new SipRegistrationListener() {
@@ -586,13 +606,12 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 					// TODO Auto-generated method stub
 					updateStatus("Failed!!!");
 					tvStatus.setTextColor(Color.RED);
-//					isAccReady = false;
 				}
 				
 				@Override
 				public void onRegistrationDone(String localProfileUri, long expiryTime) {
 					// TODO Auto-generated method stub
-					updateStatus(username + "\n is Connected");
+					updateStatus(username.substring(5) + "\n is Connected");
 					tvStatus.setTextColor(Color.GREEN);
 					isAccReady = true;
 				}
@@ -602,18 +621,15 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 					// TODO Auto-generated method stub
 					updateStatus("Connecting...");
 					tvStatus.setTextColor(Color.WHITE);
-//					isAccReady = false;
 				}
 			});
 		} catch (ParseException pe) {
             updateStatus("No Account.");
             tvStatus.setTextColor(Color.WHITE);
-//            isAccReady = false;
         } 
 		catch (SipException se) {
             updateStatus("Connection error.");
             tvStatus.setTextColor(Color.WHITE);
-//            isAccReady = false;
         }
 	}
 	
@@ -637,7 +653,7 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		exit = false;
 		try
 		{
-			SipAudioCall.Listener listener = new SipAudioCall.Listener()
+			listener = new SipAudioCall.Listener()
 			{
 				@Override
 				public void onCallEstablished(SipAudioCall call)
@@ -860,27 +876,29 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 			.setMessage("Incorrect Number")
 			.setPositiveButton("Okay", null)
 			.create();
-		case INCOMING_CALL:
-			return new AlertDialog.Builder(this)
-			.setMessage("Incoming Call")
-			.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
-					IncomingCallReceiver.flag = true;
-				}
-			})
-			.setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					// TODO Auto-generated method stub
-					IncomingCallReceiver.flag = false;
-				}
-			})
-			.setCancelable(false)
-			.create();
+//		case INCOMING_CALL:
+//			return new AlertDialog.Builder(this)
+//			.setMessage("Incoming Call")
+//			.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//				
+//				@Override
+//				public void onClick(DialogInterface dialog, int which) {
+//					// TODO Auto-generated method stub
+//					IncomingCallActivity.accept = true;
+//					Intent intent = new Intent(getBaseContext(), IncomingCallActivity.class);
+//					startActivity(intent);
+//					
+//				}
+//			})
+//			.setPositiveButton("Cancel", new DialogInterface.OnClickListener() {
+//				
+//				@Override
+//				public void onClick(DialogInterface dialog, int which) {
+//					// TODO Auto-generated method stub
+//				}
+//			})
+//			.setCancelable(false)
+//			.create();
 		}
 		return null;
 	}
@@ -897,38 +915,45 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		});
 	}
 	
-	public void updateStatus(SipAudioCall call) {
-        String useName = call.getPeerProfile().getDisplayName();
+	public void updateStatus(final SipAudioCall call) {
+        useName = call.getPeerProfile().getDisplayName();
         if(useName == null) {
           useName = call.getPeerProfile().getUserName();
         }
         Toast.makeText(getBaseContext(), "InComing...", Toast.LENGTH_SHORT).show();
-//        AlertDialog.Builder calledDialog = new AlertDialog.Builder(this);
-//        calledDialog.setTitle(useName + " is Calling to you...");
-//        calledDialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
-//			
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				// TODO Auto-generated method stub
-//				//IncomingCallReceiver.accept = true;
-//				
-//			}
-//		});
-//        calledDialog.setNegativeButton("Not Now", new DialogInterface.OnClickListener() {
-//			
-//			@Override
-//			public void onClick(DialogInterface dialog, int which) {
-//				// TODO Auto-generated method stub
-//				//IncomingCallReceiver.decline = true;
-//			}
-//		});
-//        calledDialog.setCancelable(false);
-//        calledDialog.show();
+        AlertDialog.Builder calledDialog = new AlertDialog.Builder(this);
+        calledDialog.setTitle(useName + " is Calling to you...");
+        calledDialog.setPositiveButton("Accept", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				
+				
+			}
+		});
+        calledDialog.setNegativeButton("Not Now", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				try
+				{
+					call.endCall();
+					
+					logMissedCall();
+				}
+				catch(Exception e)
+				{}
+			}
+		});
+        calledDialog.setCancelable(false);
+        calledDialog.show();
     }
 	
 	public void showToast(final String text)
 	{
-		Toast.makeText(PhoneCallActivity.this, text, Toast.LENGTH_SHORT).show();
+		Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
 	}
 	
 	public void endCurrentCall()
@@ -998,6 +1023,56 @@ public class PhoneCallActivity extends Activity implements OnClickListener {
 		{
 			Bundle bundle = data.getBundleExtra("numExtra");
 			edPhoneNum.setText(bundle.getString("Contact_num").replace(" ", ""));
+		}
+		if(result == RECEIVED_NUM_HISTORY)
+		{
+			Bundle bundle = data.getBundleExtra("numHisExtra");
+			edPhoneNum.setText(bundle.getString("His_num"));
+		}
+	}
+	
+	public void logMissedCall()
+	{
+		try
+		{
+    		int seconds = 0;
+    		int minutes = 0;
+    		StringBuilder sb = new StringBuilder(64);
+    		sb.append(minutes);
+    		sb.append(" mins ");
+    		sb.append(seconds);
+    		sb.append(" secs");
+    		PhoneCallActivity.callDuration=sb.toString();
+    		SimpleDateFormat sdf = new SimpleDateFormat("H:mmaa   EEEE, MMMM d, yyyy");
+    		Log.d("creating callinfo", "i m here");
+    		HistoryInfo hinfo=new HistoryInfo(useName,sdf.format(new Date()), PhoneCallActivity.callDuration, PhoneCallActivity.outgoingCall,true);
+    		Log.d("creating callinfo done", "i m here");
+    	
+    		AudioManager am;
+    		am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+    		am.setMode(AudioManager.MODE_NORMAL);
+    		am.setSpeakerphoneOn(false);
+    	
+    		file=new File("/data/data/chau.vpphone/files/"+PhoneCallActivity.FILENAME);
+    		if(!file.exists())
+    		{
+    			fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
+    			oos=new ObjectOutputStream(fos);
+    		}
+    		else
+    		{
+    			fos = openFileOutput(PhoneCallActivity.FILENAME, Context.MODE_APPEND);
+    			oos=new AppendableObjectOutputStream(fos);
+    		}
+    		oos.writeObject(hinfo);
+    		oos.flush();
+    		fos.close();
+    		oos.close();
+		}
+		catch(Exception e)
+		{
+			Toast toast=Toast.makeText(getApplicationContext(), "Unable to enter data to file "+e, Toast.LENGTH_LONG);
+			toast.show();
 		}
 	}
 	

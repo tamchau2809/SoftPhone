@@ -7,8 +7,7 @@
     <supports-screens
 	    android:normalScreens="true"
 	    android:smallScreens="true"
-	    android:largeScreens="true"
-	    android:anyDensity="false" />
+	    android:largeScreens="true"/>
 
     <uses-sdk
         android:minSdkVersion="9"
@@ -23,6 +22,7 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
 
@@ -81,6 +81,11 @@
             android:screenOrientation="portrait" >
         </activity>
         <activity
+            android:name=".IncomingSO"
+            android:screenOrientation="portrait" 
+            android:theme="@style/Theme.AppCompat.Dialog">
+        </activity>
+        <activity
             android:name=".AddContactActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.AppCompat.Dialog" >
@@ -124,7 +129,7 @@
         </activity>
         <activity
             android:name=".OnCallingActivity"
-            android:label="@string/title_activity_on_calling" >
+            android:label="@string/title_activity_on_calling" android:theme="@style/Theme.AppCompat.Dialog">
         </activity>
     </application>
 

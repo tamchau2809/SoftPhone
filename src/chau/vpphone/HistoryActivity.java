@@ -160,7 +160,6 @@ public class HistoryActivity extends ListActivity {
 		inflater.inflate(R.menu.context_menu, menu);
 	}
 	
-	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onContextItemSelected(MenuItem item)
 	{
@@ -168,18 +167,14 @@ public class HistoryActivity extends ListActivity {
 		switch(item.getItemId())
 		{
 		case R.id.itemCall:
-			if(callConnected)
 			{
-				showDialog(CALL_CONNECTED_DIALOG);
-			}
-			else
-			{
-				PhoneCallActivity.callSomeone = true;
-				Intent intent = new Intent(this, PhoneCallActivity.class);
-				intent.putExtra(ADDRTOCALL, String.valueOf(historyInfo.get(info.position)));
-				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-				intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-				startActivity(intent);
+				Intent intent = getIntent();
+				Bundle bundle = new Bundle();
+				
+				bundle.putString("His_num", historyInfo.get(info.position).getSipAddr().toString());
+				intent.putExtra("numHisExtra", bundle);
+				setResult(PhoneCallActivity.RECEIVED_NUM_HISTORY, intent);
+				finish();
 			}
 			return true;
 		case R.id.itemDel:
@@ -320,9 +315,11 @@ public class HistoryActivity extends ListActivity {
 			{
 				icon.setImageResource(R.drawable.out_call);
 			}
+			else if(historyInfo.get(pos).isMissedCall())
+				{
+					icon.setImageResource(R.drawable.miss_call);
+				}
 			else icon.setImageResource(R.drawable.in_call);
-			if(historyInfo.get(pos).isMissedCall())
-				icon.setImageResource(R.drawable.miss_call);			
 			return view;
 		}		
 	}
